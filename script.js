@@ -1,10 +1,25 @@
-let dolar = 5.6
-
+let dolar = 5.6 
 let usdInput = document.querySelector("#usd")
 let brlInput = document.querySelector("#brl")
 
-// Evento para quando o usuário digita no campo USD
+// Função para pegar a cotação do dólar em tempo real
+async function getDollarRate() {
+    try {
+        let response = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL")
+        let data = await response.json()
+        dolar = parseFloat(data.USDBRL.bid)
+        console.log(`Cotação do dólar atual: ${dolar}`)
+    } catch (error) {
+        console.error("Erro ao buscar a cotação do dólar:", error)
+    }
+}
+
+
+getDollarRate()
+
+
 usdInput.addEventListener("keyup", () => {
+    usdInput.value = validateInput(usdInput.value) 
     let usdValue = fixValue(usdInput.value)
     let brlValue = usdValue * dolar
     brlInput.value = formatCurrency(brlValue)
@@ -12,10 +27,17 @@ usdInput.addEventListener("keyup", () => {
 
 // Evento para quando o usuário digita no campo BRL
 brlInput.addEventListener("keyup", () => {
+    brlInput.value = validateInput(brlInput.value) 
     let brlValue = fixValue(brlInput.value)
     let usdValue = brlValue / dolar
     usdInput.value = formatCurrency(usdValue)
 })
+
+// Função para validar a entrada e permitir apenas números e ponto decimal
+function validateInput(value) {
+    
+    return value.replace(/[^0-9.,]/g, "")
+}
 
 // Função para formatar o valor monetário corretamente
 function formatCurrency(value) {
@@ -34,24 +56,9 @@ function fixValue(value) {
     let fixedValue = value.replace(",", ".")
     let floatValue = parseFloat(fixedValue)
 
-    // Verifica se o valor é NaN e ajusta para 0
+    
     if (isNaN(floatValue)) {
         floatValue = 0
     }
     return floatValue
-}
-
-// Função para realizar a conversão
-function convert(type) {
-    if (type == "usd-to-brl") {
-        let usdValue = fixValue(usdInput.value)
-        let brlValue = usdValue * dolar
-        brlInput.value = formatCurrency(brlValue)
-    }
-
-    if (type == "brl-to-usd") {
-        let brlValue = fixValue(brlInput.value)
-        let usdValue = brlValue / dolar
-        usdInput.value = formatCurrency(usdValue)
-    }
 }
